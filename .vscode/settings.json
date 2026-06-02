@@ -1,0 +1,11 @@
+{
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnType": true,
+    "files.autoSaveWorkspaceFilesOnly": true,
+    "interactiveWindow.promptToSaveOnClose": false,
+    "notebook.formatOnSave.enabled": true,
+    "files.autoSave": "afterDelay",
+    "files.autoSaveWhenNoErrors": false,
+    "editor.formatOnSaveMode": "modifications"
+}
