@@ -9,6 +9,12 @@ import {
 
 import toast from "react-hot-toast";
 
+type ProfileQueryData = {
+  data: {
+    name: string;
+  };
+};
+
 export const useUpdateProfile =
   () => {
 
@@ -45,8 +51,8 @@ export const useUpdateProfile =
             ],
 
             (
-              old: any
-            ) => {
+              old: ProfileQueryData
+            ) => {  
 
               if (
                 !old
