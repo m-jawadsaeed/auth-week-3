@@ -6,49 +6,40 @@ import { getProfileApi } from "../../../api/user.api";
 import { useAuthStore } from "../store/auth.store";
 
 export const useInitializeAuth = () => {
-  const login = useAuthStore(
-    (state) => state.login
-  );
+  const login = useAuthStore((state) => state.login);
+  const setAuthLoading = useAuthStore((state) => state.setAuthLoading);
 
   useEffect(() => {
-    const initialize = async () => {
+    const init = async () => {
       try {
-        const refreshToken =
-          localStorage.getItem(
-            "refreshToken"
-          );
+        setAuthLoading(true);
 
-        if (!refreshToken) {
-          return;
-        }
+        const refreshToken = localStorage.getItem("refreshToken");
 
-        const refreshResponse =
-          await refreshApi(
-            refreshToken
-          );
+        if (!refreshToken) return;
 
-        const refreshData =
-          refreshResponse.data.data;
+        const refreshResponse = await refreshApi(refreshToken);
 
-        const profileResponse =
-          await getProfileApi();
+        const refreshData = refreshResponse.data.data;
+
+        const profileResponse = await getProfileApi();
 
         const user =
-          profileResponse.data.data ??
-          profileResponse.data;
+          profileResponse.data.data ?? profileResponse.data;
 
         login(
           user,
           refreshData.accessToken,
           refreshData.refreshToken
         );
-      } catch (error) {
-        console.error(error);
-
+      } catch (err) {
+        console.log(err);
         localStorage.clear();
+      } finally {
+        setAuthLoading(false);
       }
     };
 
-    initialize();
-  }, [login]);
+    init();
+  }, [login, setAuthLoading]);
 };

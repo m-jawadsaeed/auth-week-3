@@ -1,80 +1,56 @@
 import { create } from "zustand";
-
 import { persist } from "zustand/middleware";
 
-import type {
-  User,
-} from "../../../types/auth.types";
+type User = {
+  id: number;
+  name: string;   
+  email: string;
+  role?: string;
+};
 
-interface AuthState {
+type AuthState = {
   user: User | null;
-
   accessToken: string | null;
+  refreshToken: string | null;
 
-  setUser: (
-    user: User | null
-  ) => void;
+  isAuthLoading: boolean;
 
-  setAccessToken: (
-    token: string | null
-  ) => void;
-
-  login: (
-    user: User,
-    accessToken: string,
-    refreshToken: string
-  ) => void;
-
+  login: (user: User, accessToken: string, refreshToken: string) => void;
   logout: () => void;
-}
+  setAuthLoading: (state: boolean) => void;
 
-export const useAuthStore =
-  create<AuthState>()(
-    persist(
-      (set) => ({
-        user: null,
+  setAccessToken: (token: string) => void; // ✅ ADD THIS
+};
 
-        accessToken: null,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      accessToken: null,
+      refreshToken: null,
 
-        setUser: (user) =>
-          set({ user }),
+      isAuthLoading: true,
 
-        setAccessToken: (
-          token
-        ) =>
-          set({
-            accessToken: token,
-          }),
+      login: (user, accessToken, refreshToken) =>
+        set({ user, accessToken, refreshToken }),
 
-        login: (
-          user,
-          accessToken,
-          refreshToken
-        ) => {
-          localStorage.setItem(
-            "refreshToken",
-            refreshToken
-          );
+      logout: () =>
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+        }),
 
-          set({
-            user,
-            accessToken,
-          });
-        },
+      setAuthLoading: (state) =>
+        set({ isAuthLoading: state }),
 
-        logout: () => {
-          localStorage.removeItem(
-            "refreshToken"
-          );
-
-          set({
-            user: null,
-            accessToken: null,
-          });
-        },
-      }),
-      {
-        name: "auth-storage",
-      }
-    )
-  );
+      setAccessToken: (token) =>
+        set({
+          accessToken: token,
+        }),
+    }),
+    {
+      name: "auth-storage",
+    }
+  )
+);

@@ -1,24 +1,21 @@
-import {
-  RouterProvider,
-} from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./app/router";
 
-import {
-  router,
-} from "./app/router";
-
-import {
-  useInitializeAuth,
-} from "./features/auth/hooks/useInitializeAuth";
+import { useInitializeAuth } from "./features/auth/hooks/useInitializeAuth";
+import { useAuthStore } from "./features/auth/store/auth.store";
 
 function App() {
-
   useInitializeAuth();
 
-  return (
-    <RouterProvider
-      router={router}
-    />
+  const isAuthLoading = useAuthStore(
+    (state) => state.isAuthLoading
   );
+
+  if (isAuthLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return <RouterProvider router={router} />;
 }
 
 export default App;

@@ -1,10 +1,14 @@
-import { useAuthStore } from "../features/auth/store/auth.store";
 import { Navigate, Outlet } from "react-router-dom";
+import { useAuthStore } from "../features/auth/store/auth.store";
 
-const ProtectedAuthRoute = () => {
+const AuthGuard = () => {
   const token = useAuthStore((state) => state.accessToken);
+  const isAuthLoading = useAuthStore((state) => state.isAuthLoading);
 
-  // If already logged in → block login/register pages
+  // wait until auth init finishes
+  if (isAuthLoading) return null;
+
+  // if logged in → block login/register routes
   if (token) {
     return <Navigate to="/" replace />;
   }
@@ -12,4 +16,4 @@ const ProtectedAuthRoute = () => {
   return <Outlet />;
 };
 
-export default ProtectedAuthRoute;
+export default AuthGuard;
