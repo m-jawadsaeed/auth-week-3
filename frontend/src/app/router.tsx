@@ -2,37 +2,39 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 
-import ProtectedRoute
-from "../components/protectedRoutes";
+import ProtectedRoute from "../components/protectedRoutes";
 
-import LoginPage
-from "../features/auth/pages/loginPage";
+import GuestRoute from "../components/GuestRoute";
 
-import RegisterPage
-from "../features/auth/pages/registerPage";
-import DashboardPage
-from "../features/dashboard/pages/dashboardPage";
+import LoginPage from "../features/auth/pages/loginPage";
+import RegisterPage from "../features/auth/pages/registerPage";
 
-import ProfilePage
-from "../features/profile/pages/ProfilePage";
+import DashboardPage from "../features/dashboard/pages/dashboardPage";
 
-import UsersPage
-from "../features/admin/pages/UsersPage";
+import ProfilePage from "../features/profile/pages/ProfilePage";
 
-import AnalyticsPage
-from "../features/admin/pages/AnalyticsPage";
+import UsersPage from "../features/admin/pages/UsersPage";
+import AnalyticsPage from "../features/admin/pages/AnalyticsPage";
+import { Navigate } from "react-router-dom";
 
 export const router =
   createBrowserRouter([
-
     {
-        path:"/login",
-        element:<LoginPage />
+      path: "/login",
+      element: (
+        <GuestRoute>
+          <LoginPage />
+        </GuestRoute>
+      ),
     },
 
     {
-        path:"/register",
-        element:<RegisterPage />
+      path: "/register",
+      element: (
+        <GuestRoute>
+          <RegisterPage />
+        </GuestRoute>
+      ),
     },
 
     {
@@ -52,26 +54,32 @@ export const router =
         </ProtectedRoute>
       ),
     },
-    {
-      path:"/admin/users",
 
-      element:(
-        <ProtectedRoute
-        role="ADMIN"
-        >
-        <UsersPage />
+    {
+      path: "/admin/users",
+      element: (
+        <ProtectedRoute role="ADMIN">
+          <UsersPage />
         </ProtectedRoute>
-      )
+      ),
     },
-    {
-      path:"/admin/analytics",
 
-      element:(
-        <ProtectedRoute
-        role="ADMIN"
-        >
-        <AnalyticsPage />
+    {
+      path: "/admin/analytics",
+      element: (
+        <ProtectedRoute role="ADMIN">
+          <AnalyticsPage />
         </ProtectedRoute>
-      )
+      ),
+    },
+
+    {
+      path: "*",
+      element: (
+        <Navigate
+          to="/"
+          replace
+        />
+      ),
     },
   ]);

@@ -20,6 +20,12 @@ export interface JwtPayload {
 
 export interface TokenPair {
   accessToken: string;
-
   refreshToken: string;
+
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: "USER" | "ADMIN";
+  };
 }

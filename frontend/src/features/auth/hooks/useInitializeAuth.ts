@@ -1,60 +1,54 @@
-import {
-  useEffect,
-} from "react";
+import { useEffect } from "react";
 
-import {
-  refreshApi,
-} from "../../../api/auth.api";
+import { refreshApi } from "../../../api/auth.api";
+import { getProfileApi } from "../../../api/user.api";
 
-import {
-  useAuthStore,
-} from "../store/auth.store";
+import { useAuthStore } from "../store/auth.store";
 
-export const useInitializeAuth =
-  () => {
+export const useInitializeAuth = () => {
+  const login = useAuthStore(
+    (state) => state.login
+  );
 
-    const {
-      login,
-    } =
-      useAuthStore();
+  useEffect(() => {
+    const initialize = async () => {
+      try {
+        const refreshToken =
+          localStorage.getItem(
+            "refreshToken"
+          );
 
-    useEffect(() => {
+        if (!refreshToken) {
+          return;
+        }
 
-      const initialize =
-        async () => {
+        const refreshResponse =
+          await refreshApi(
+            refreshToken
+          );
 
-          try {
+        const refreshData =
+          refreshResponse.data.data;
 
-            const refreshToken =
-              localStorage.getItem(
-                "refreshToken"
-              );
+        const profileResponse =
+          await getProfileApi();
 
-            if (
-              !refreshToken
-            ) return;
+        const user =
+          profileResponse.data.data ??
+          profileResponse.data;
 
-            const response =
-              await refreshApi(
-                refreshToken
-              );
+        login(
+          user,
+          refreshData.accessToken,
+          refreshData.refreshToken
+        );
+      } catch (error) {
+        console.error(error);
 
-            const data =
-              response.data;
+        localStorage.clear();
+      }
+    };
 
-            login(
-              data.user,
-              data.accessToken,
-              data.refreshToken
-            );
-
-          } catch {
-
-            localStorage.clear();
-          }
-        };
-
-      initialize();
-
-    }, []);
-  };
+    initialize();
+  }, [login]);
+};

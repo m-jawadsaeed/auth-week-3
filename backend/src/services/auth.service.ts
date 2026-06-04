@@ -25,6 +25,7 @@ import {
   findRefreshToken,
   findUserByEmail,
   saveRefreshToken,
+  findUserById
 } from "../repositories/auth.repository";
 
 export const registerService = async (payload: RegisterInput) => {
@@ -57,39 +58,67 @@ export const registerService = async (payload: RegisterInput) => {
   };
 };
 
-export const loginService = async (payload: LoginInput): Promise<TokenPair> => {
-  const user = await findUserByEmail(payload.email);
+export const loginService = async (
+  payload: LoginInput
+): Promise<TokenPair> => {
+
+  const user =
+    await findUserByEmail(
+      payload.email
+    );
 
   if (!user) {
-    throw new ApiError(401, "Invalid credentials");
+    throw new ApiError(
+      401,
+      "Invalid credentials"
+    );
   }
 
-  const isMatch = await comparePassword(payload.password, user.password);
+  const isMatch =
+    await comparePassword(
+      payload.password,
+      user.password
+    );
 
   if (!isMatch) {
-    throw new ApiError(401, "Invalid credentials");
+    throw new ApiError(
+      401,
+      "Invalid credentials"
+    );
   }
 
-  const accessToken = createAccessToken({
-    id: user.id,
-    role: user.role,
-  });
+  const accessToken =
+    createAccessToken({
+      id: user.id,
+      role: user.role,
+    });
 
-  const refreshToken = createRefreshToken({
-    id: user.id,
-    role: user.role,
-  });
+  const refreshToken =
+    createRefreshToken({
+      id: user.id,
+      role: user.role,
+    });
 
   await saveRefreshToken(
     uuidv4(),
     user.id,
     refreshToken,
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    new Date(
+      Date.now() +
+        7 * 24 * 60 * 60 * 1000
+    )
   );
 
   return {
     accessToken,
     refreshToken,
+
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
   };
 };
 
@@ -156,13 +185,31 @@ export const refreshService = async (oldToken: string): Promise<TokenPair> => {
         new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       ],
     );
-
     await client.query("COMMIT");
 
-    return {
-      accessToken,
-      refreshToken,
-    };
+      const user =
+        await findUserById(
+          payload.id
+        );
+
+      if (!user) {
+        throw new ApiError(
+          404,
+          "User not found"
+        );
+      }
+
+      return {
+        accessToken,
+        refreshToken,
+
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      };
   } catch (error) {
     await client.query("ROLLBACK");
 

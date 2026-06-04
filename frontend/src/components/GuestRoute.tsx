@@ -10,37 +10,17 @@ import {
 
 interface Props {
   children: ReactNode;
-
-  role?: "USER" | "ADMIN";
 }
 
-export default function ProtectedRoute({
+export default function GuestRoute({
   children,
-  role,
 }: Props) {
   const user =
     useAuthStore(
       (state) => state.user
     );
 
-  console.log(
-    "ProtectedRoute User:",
-    user
-  );
-
-  if (!user) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
-  }
-
-  if (
-    role &&
-    user.role !== role
-  ) {
+  if (user) {
     return (
       <Navigate
         to="/"

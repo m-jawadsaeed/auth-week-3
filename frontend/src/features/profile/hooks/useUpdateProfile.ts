@@ -9,112 +9,92 @@ import {
 
 import toast from "react-hot-toast";
 
-type ProfileQueryData = {
-  data: {
-    name: string;
-  };
-};
+interface ProfileData {
+  id: string;
+  name: string;
+  email: string;
+  role: "USER" | "ADMIN";
+}
 
-export const useUpdateProfile =
-  () => {
+interface ProfileResponse {
+  data: ProfileData;
+}
 
-    const queryClient =
-      useQueryClient();
+interface UpdateProfilePayload {
+  name: string;
+}
 
-    return useMutation({
+export const useUpdateProfile = () => {
+  const queryClient =
+    useQueryClient();
 
-      mutationFn:
-        updateProfileApi,
+  return useMutation({
+    mutationFn:
+      updateProfileApi,
 
-      onMutate:
-        async (
-          newData
-        ) => {
+    onMutate: async (
+      newData: UpdateProfilePayload
+    ) => {
+      await queryClient.cancelQueries({
+        queryKey: ["profile"],
+      });
 
-          await queryClient
-            .cancelQueries({
-              queryKey: [
-                "profile",
-              ],
-            });
+      const previousProfile =
+        queryClient.getQueryData<ProfileResponse>(
+          ["profile"]
+        );
 
-          const previousProfile =
-            queryClient.getQueryData(
-              [
-                "profile",
-              ]
-            );
-
-          queryClient.setQueryData(
-            [
-              "profile",
-            ],
-
-            (
-              old: ProfileQueryData
-            ) => {  
-
-              if (
-                !old
-              )
-                return old;
-
-              return {
-
-                ...old,
-
-                data: {
-
-                  ...old.data,
-
-                  name:
-                    newData.name,
-                },
-              };
-            }
-          );
+      queryClient.setQueryData<ProfileResponse>(
+        ["profile"],
+        (old) => {
+          if (!old) {
+            return old;
+          }
 
           return {
-            previousProfile,
+            ...old,
+            data: {
+              ...old.data,
+              name: newData.name,
+            },
           };
-        },
+        }
+      );
 
-      onError:
-        (
-          error,
-          variables,
-          context
-        ) => {
+      return {
+        previousProfile,
+      };
+    },
 
-          queryClient.setQueryData(
-            [
-              "profile",
-            ],
+    onError: (
+      _error,
+      _variables,
+      context
+    ) => {
+      if (
+        context?.previousProfile
+      ) {
+        queryClient.setQueryData(
+          ["profile"],
+          context.previousProfile
+        );
+      }
 
-            context?.previousProfile
-          );
+      toast.error(
+        "Update failed"
+      );
+    },
 
-          toast.error(
-            "Update failed"
-          );
-        },
+    onSuccess: () => {
+      toast.success(
+        "Profile updated"
+      );
+    },
 
-      onSuccess:
-        () => {
-
-          toast.success(
-            "Profile updated"
-          );
-        },
-
-      onSettled:
-        () => {
-
-          queryClient.invalidateQueries({
-            queryKey: [
-              "profile",
-            ],
-          });
-        },
-    });
-  };
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["profile"],
+      });
+    },
+  });
+};
