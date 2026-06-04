@@ -1,31 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
-
 import { useLogout } from "../features/auth/hooks/useLogout";
 import { useAuthStore } from "../features/auth/store/auth.store";
 
 export default function Navbar() {
-  const logout = useLogout();
-
   const location = useLocation();
 
-  const user = useAuthStore(
-    (state) => state.user
-  );
+  const { mutate: logout } = useLogout();
 
-  const handleLogout = () => {
-    const refreshToken =
-      localStorage.getItem(
-        "refreshToken"
-      );
+  const user = useAuthStore((state) => state.user);
 
-    if (refreshToken) {
-      logout.mutate(refreshToken);
-    }
-  };
-
-  const linkClass = (
-    path: string
-  ) =>
+  const linkClass = (path: string) =>
     `px-4 py-2 rounded-lg transition ${
       location.pathname === path
         ? "bg-blue-600 text-white"
@@ -36,6 +20,8 @@ export default function Navbar() {
     <nav className="bg-white shadow border-b">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-16">
+
+          {/* LEFT SIDE LINKS */}
           <div className="flex items-center gap-4">
             <Link
               to="/"
@@ -44,39 +30,27 @@ export default function Navbar() {
               AuthShield
             </Link>
 
-            <Link
-              to="/"
-              className={linkClass("/")}
-            >
+            <Link to="/" className={linkClass("/")}>
               Dashboard
             </Link>
 
-            <Link
-              to="/profile"
-              className={linkClass(
-                "/profile"
-              )}
-            >
+            <Link to="/profile" className={linkClass("/profile")}>
               Profile
             </Link>
 
-            {user?.role ===
-              "ADMIN" && (
+            {/* ADMIN LINKS */}
+            {user?.role === "ADMIN" && (
               <>
                 <Link
                   to="/admin/users"
-                  className={linkClass(
-                    "/admin/users"
-                  )}
+                  className={linkClass("/admin/users")}
                 >
                   Users
                 </Link>
 
                 <Link
                   to="/admin/analytics"
-                  className={linkClass(
-                    "/admin/analytics"
-                  )}
+                  className={linkClass("/admin/analytics")}
                 >
                   Analytics
                 </Link>
@@ -84,25 +58,29 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* RIGHT SIDE */}
           <div className="flex items-center gap-4">
+
+            {/* USER INFO */}
             <div className="text-right">
               <p className="font-semibold text-sm">
-                {user?.name}
+                {user?.name || "Guest"}
               </p>
-
               <p className="text-xs text-slate-500">
-                {user?.role}
+                {user?.role || ""}
               </p>
             </div>
 
-            <button
-              onClick={
-                handleLogout
-              }
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-            >
-              Logout
-            </button>
+            {/* LOGOUT BUTTON */}
+            {user && (
+              <button
+                onClick={() => logout()}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+              >
+                Logout
+              </button>
+            )}
+
           </div>
         </div>
       </div>
